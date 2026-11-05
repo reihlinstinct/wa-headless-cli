@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert');
-const { extractText, isGroupJid, isStatusBroadcast, phoneToJid } = require('../lib-helpers');
+const { extractText, isGroupJid, isStatusBroadcast, phoneToJid } = require('../src/lib-helpers');
 
 test('extractText reads plain conversation', () => {
   assert.strictEqual(extractText({ conversation: 'hi' }), 'hi');
@@ -25,7 +25,7 @@ test('phoneToJid normalizes', () => {
 });
 
 // Contact-name resolution (synthetic data only)
-const { makeNameResolver } = require('../lib-helpers');
+const { makeNameResolver } = require('../src/lib-helpers');
 const names = { '15550100001': 'Ima Example', '15550100002@s.whatsapp.net': 'Abba Example' };
 const lids = { '900000000001': '15550100001' };
 const resolve = makeNameResolver(names, lids);
@@ -49,7 +49,7 @@ test('resolver tolerates missing maps', () => {
 });
 
 // Chat-state mutation summaries (synthetic)
-const { chatUpdateSummary } = require('../lib-helpers');
+const { chatUpdateSummary } = require('../src/lib-helpers');
 test('chatUpdateSummary: archive/pin/mute/read transitions', () => {
   assert.strictEqual(chatUpdateSummary({ archived: true }), 'archived');
   assert.strictEqual(chatUpdateSummary({ archived: false }), 'unarchived');
