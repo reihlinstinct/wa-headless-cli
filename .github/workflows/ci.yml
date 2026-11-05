@@ -13,7 +13,7 @@ jobs:
       - name: Run unit tests in container
         run: |
           docker run --rm -e NODE_ENV=development --entrypoint sh wa-headless -c \
-            "npm install --include=dev && node --test test/"
+            "npm install --include=dev && npm test"
       - name: Summary
         if: always()
         run: |
