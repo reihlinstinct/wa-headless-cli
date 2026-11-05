@@ -67,7 +67,10 @@ async function connect({ onOpen, keepAlive }) {
     }
   });
   const BUFFER = path.join(RUN_DIR, 'buffer.json');
-  sock.ev.on('contacts.upsert', (cs) => { let ch = 0; for (const c of cs) { const id = c.id || c.jid; const n = c.name || c.notify; if (id && n && !namesDb[id]) { namesDb[id] = n; ch++; } } if (ch) fs.writeFileSync(NAMES_FILE, JSON.stringify(namesDb, null, 1), { mode: 0o600 }); });
+  sock.ev.on('chats.update', (us) => { for (const u of us) { const s = chatUpdateSummary(u); if (s) log('CHAT-STATE', u.id, resolveName(u.id) || '', '=>', s); } });
+  const mergeContacts = (cs) => { let ch = 0; for (const c of cs) { const id = c.id || c.jid; const n = c.name || c.notify || c.verifiedName; if (id && n && !namesDb[id]) { namesDb[id] = n; ch++; } } if (ch) fs.writeFileSync(NAMES_FILE, JSON.stringify(namesDb, null, 1), { mode: 0o600 }); };
+  sock.ev.on('contacts.update', mergeContacts);
+  sock.ev.on('contacts.upsert', mergeContacts);
   sock.ev.on('messages.upsert', (m) => {
     let buf = [];
     try { buf = JSON.parse(fs.readFileSync(BUFFER, 'utf8')); } catch (e) {}
