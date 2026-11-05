@@ -37,12 +37,19 @@ messages from the command line. Runs on a bare Linux box or in a container
 - Nothing is sent unless the owner explicitly instructs a specific message.
 - Session credentials are never committed or uploaded anywhere.
 
-## Limitations
+## Limitations (observed live, 2026-11-05)
 - Unofficial library: WhatsApp can restrict or ban accounts using it.
   A dedicated secondary number is recommended for regular use.
-- History: on pairing WhatsApp pushes recent history (archived chats
-  included, with archive flags). Full history sync is optional
-  (`syncFullHistory`), off by default.
+- Session revocation: the owner can unlink the device from the phone at any
+  time; the session then dies immediately with disconnect 401 (loggedOut)
+  and requires a fresh QR pairing. Rapid reconnect storms during testing may
+  also trigger server-side invalidation.
+- Archived / muted chats: real-time delivery gaps observed - a media message
+  in an archived+muted group never reached the listener while connected.
+  History sync pushes recent conversations (archived included, with archive
+  flags) but the owner chose not to parse history; new messages only.
+- Media: media messages arrive as typed stubs (imageMessage etc.) and are
+  logged by type only; downloading media is possible but not implemented.
 - A linked session dies if the phone unpairs the device or the session
   stays offline past WhatsApp's linked-device limits.
 
