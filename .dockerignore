@@ -1,0 +1,6 @@
+node_modules/
+auth/
+run/
+.git/
+*.log
+buffer.json
