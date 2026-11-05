@@ -28,6 +28,17 @@ node cli.js listen                       # pair + listen
 node cli.js send 9725XXXXXXX@s.whatsapp.net "hello"
 ```
 
+## Features
+
+- Pair with a QR printed as terminal text (PNG also written); session
+  persists and reconnects without a QR
+- `listen`: logs every message as it arrives - time, direction, direct vs
+  group, media type - with sender names resolved from WhatsApp display
+  names (pushName), live address-book contact sync (contacts.upsert), and
+  the session's LID-to-phone mapping
+- `send <jid> <text>`: one-off send from the shell
+- No browser, no native modules; runs in a container
+
 ## Privacy
 
 Metadata-only logs; message contents are held at most in a local 20-message

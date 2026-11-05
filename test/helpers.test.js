@@ -23,3 +23,27 @@ test('phoneToJid normalizes', () => {
   assert.strictEqual(phoneToJid('+1 (555) 010-0199'), '15550100199@s.whatsapp.net');
   assert.throws(() => phoneToJid('---'));
 });
+
+// Contact-name resolution (synthetic data only)
+const { makeNameResolver } = require('../lib-helpers');
+const names = { '15550100001': 'Ima Example', '15550100002@s.whatsapp.net': 'Abba Example' };
+const lids = { '900000000001': '15550100001' };
+const resolve = makeNameResolver(names, lids);
+
+test('resolves phone JID with device suffix', () => {
+  assert.strictEqual(resolve('15550100001:3@s.whatsapp.net'), 'Ima Example');
+});
+test('resolves JID keyed with full jid entry', () => {
+  assert.strictEqual(resolve('15550100002@s.whatsapp.net'), 'Abba Example');
+});
+test('resolves LID via mapping to address-book name', () => {
+  assert.strictEqual(resolve('900000000001@lid'), 'Ima Example');
+});
+test('unknown JID and empty input resolve to null', () => {
+  assert.strictEqual(resolve('15550999999@s.whatsapp.net'), null);
+  assert.strictEqual(resolve(null), null);
+});
+test('resolver tolerates missing maps', () => {
+  const r = makeNameResolver();
+  assert.strictEqual(r('15550100001@s.whatsapp.net'), null);
+});

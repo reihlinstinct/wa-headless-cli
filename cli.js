@@ -29,15 +29,7 @@ function loadLidMaps() {
   return m;
 }
 const lidToPhone = loadLidMaps();
-function resolveName(jid) {
-  if (!jid) return null;
-  const id = String(jid).split('@')[0].split(':')[0];
-  if (namesDb[jid]) return namesDb[jid];
-  if (namesDb[id]) return namesDb[id];
-  const phone = lidToPhone[id];
-  if (phone && (namesDb[phone] || namesDb[phone + '@s.whatsapp.net'])) return namesDb[phone] || namesDb[phone + '@s.whatsapp.net'];
-  return null;
-}
+const resolveName = makeNameResolver(namesDb, lidToPhone);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 async function connect({ onOpen, keepAlive }) {
