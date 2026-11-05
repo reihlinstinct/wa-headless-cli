@@ -67,6 +67,7 @@ async function connect({ onOpen, keepAlive }) {
     }
   });
   const BUFFER = path.join(RUN_DIR, 'buffer.json');
+  sock.ev.on('lid-mapping.update', ({ lid, pn }) => { if (lid && pn) { lidToPhone[String(lid).split('@')[0].split(':')[0]] = String(pn).split('@')[0].split(':')[0]; } });
   sock.ev.on('chats.update', (us) => { for (const u of us) { const s = chatUpdateSummary(u); if (s) log('CHAT-STATE', u.id, resolveName(u.id) || '', '=>', s); } });
   const mergeContacts = (cs) => { let ch = 0; for (const c of cs) { const id = c.id || c.jid; const n = c.name || c.notify || c.verifiedName; if (id && n && !namesDb[id]) { namesDb[id] = n; ch++; } } if (ch) fs.writeFileSync(NAMES_FILE, JSON.stringify(namesDb, null, 1), { mode: 0o600 }); };
   sock.ev.on('contacts.update', mergeContacts);

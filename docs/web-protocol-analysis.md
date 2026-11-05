@@ -29,6 +29,25 @@ So "archived" is a per-chat flag maintained by `archive` mutations in an
 app-state collection; the initial value arrives inside history sync, and
 later changes arrive as live mutations on the same socket as messages.
 
+## Contact source: WhatsApp-internal storage (owner context)
+
+The owner's WhatsApp has NO phone-address-book permission; his contacts are
+saved in WhatsApp's own contact storage. Consequence: names do NOT come from
+an OS address book on the linked device. They arrive only as:
+
+- CONTACT_ACTION / LID_CONTACT_ACTION app-state mutations (the same
+  collection sync as above) -> Baileys emits `contacts.upsert` with
+  {id, name, username, lid, phoneNumber} (see processContactAction in
+  lib/Utils/sync-action-utils.js), plus `lid-mapping.update` for LID-PN pairs
+  learned from those mutations;
+- per-message `pushname` -> Baileys emits `contacts.update` {id, notify}.
+
+Both are already merged into the CLI's local names DB, and the CLI also
+subscribes `lid-mapping.update` to keep the live LID->phone map current.
+No history sync is needed for this path: app-state patches flow on every
+connect. Caveat: contacts never mutated after linking may only appear via
+history sync or their first incoming message (pushname).
+
 ## How contact names sync
 
 - CONTACT_ACTION ("contact") mutations carry address-book names.
