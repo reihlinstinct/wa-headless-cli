@@ -1,0 +1,47 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Privacy scan (best-effort)
+        run: |
+          set -e
+          ! git ls-files | grep -iE '(^|/)(auth|run|creds|buffer\.json|.*\.log)$|creds\.json|app-state-sync-key' \
+            || { echo 'credential/session file tracked'; exit 1; }
+          ! git grep -nIE '972[0-9]{9}|05[0-9]-?[0-9]{7}' -- . ':(exclude)docs/web-protocol-analysis.md' \
+            || { echo 'possible real phone number in tracked files'; exit 1; }
+          echo 'privacy scan clean'
+      - name: Structure manifest
+        run: |
+          set -e
+          for f in src/cli.js src/lib-helpers.js test docs/design.md Containerfile .github/workflows/ci.yml README.md LICENSE SECURITY.md; do
+            [ -e "$f" ] || { echo "missing from manifest: $f"; exit 1; }
+          done
+          echo 'structure manifest OK'
+      - name: Build image
+        run: docker build -f Containerfile -t wa-headless .
+      - name: Run unit tests in container
+        run: |
+          docker run --rm -e NODE_ENV=development --entrypoint sh wa-headless -c \
+            "npm install --include=dev && npm test"
+      - name: CLI smoke test in container (P1-1 regression)
+        run: |
+          docker run --rm --entrypoint node wa-headless src/cli.js __smoke__ 2>&1 | tee /tmp/smoke.out; \
+          grep -q 'usage: cli.js' /tmp/smoke.out
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## CI run"
+            echo "- Privacy scan (no creds/session files, no phone-number patterns)"
+            echo "- Structure manifest check"
+            echo "- Built wa-headless image from Containerfile"
+            echo "- Unit tests (node --test) inside the image"
+            echo "- CLI smoke test: loads and prints usage (P1-1 regression)"
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
