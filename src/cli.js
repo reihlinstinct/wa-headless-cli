@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const qrcodeTerminal = require('qrcode-terminal');
 const QR = require('qrcode');
+const { extractText, makeNameResolver, chatUpdateSummary } = require('./lib-helpers');
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -32,7 +33,7 @@ const lidToPhone = loadLidMaps();
 const resolveName = makeNameResolver(namesDb, lidToPhone);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
-async function connect({ onOpen, keepAlive }) {
+async function connect({ onOpen, closeExitCode = 0 }) {
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
   const { version } = await fetchLatestBaileysVersion();
   log('using WA version', version.join('.'));
@@ -63,7 +64,7 @@ async function connect({ onOpen, keepAlive }) {
       const code = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode;
       log('CLOSED, statusCode =', code);
       if (code !== DisconnectReason.loggedOut) log('(will exit; rerun to reconnect)');
-      process.exit(0);
+      process.exit(closeExitCode);
     }
   });
   const BUFFER = path.join(RUN_DIR, 'buffer.json');
@@ -88,7 +89,7 @@ async function connect({ onOpen, keepAlive }) {
       const meta = (msg.key.participant ? ' participant=' + msg.key.participant : '') + (msg.pushName ? ' name=' + msg.pushName : '');
       const cname = resolveName(from) || resolveName(msg.key.participant);
       log('MSG', fromMe ? 'OUT' : 'IN', from + meta + (cname ? ' contact=' + cname : '') + (mediaType ? ' media=' + mediaType : '') + stub);
-      if (text && !isGroup) {
+      if (text && !isGroup && from !== 'status@broadcast') {
         buf.push({ ts: new Date().toISOString(), dir: fromMe ? 'OUT' : 'IN', jid: from, name: cname || msg.pushName || null, text: String(text).slice(0, 500) });
         buf = buf.slice(-20);
         fs.writeFileSync(BUFFER, JSON.stringify(buf, null, 1), { mode: 0o600 });
@@ -104,6 +105,7 @@ async function main() {
     const [jid, ...textParts] = args;
     const text = textParts.join(' ');
     await connect({
+      closeExitCode: 1,
       onOpen: async (sock) => {
         await sock.sendMessage(jid, { text });
         log('SENT to', jid, ':', text.slice(0, 200));

@@ -21,7 +21,10 @@ messages from the command line. Runs on a bare Linux box or in a container
 - Commands:
   - `listen` (default): connect, print QR if unpaired, log every incoming /
     synced-outgoing message as it arrives.
-  - `send <jid> <text>`: connect, send one text message, exit.
+  - `send <jid> <text>`: connect, send one text message, exit 0 on success;
+    exits 1 if the connection closes before the send completes.
+- Logging goes to stdout (metadata only); the operator may redirect it,
+  e.g. to a local `run/run.log`. Message contents are never logged.
 - Addressing: a contact is a JID, `<international number without +>@s.whatsapp.net`.
   Newer accounts/contacts may appear as `<lid>@lid`; the session's
   `lid-mapping-*` files map LID <-> phone. Groups are `<id>@g.us` with the
@@ -53,6 +56,10 @@ messages from the command line. Runs on a bare Linux box or in a container
 - A linked session dies if the phone unpairs the device or the session
   stays offline past WhatsApp's linked-device limits.
 
-## Verification (done 2026-11-05, owner's own number, with his approval)
-Pair via terminal QR -> connect as own JID -> send to self -> receive live
-inbound (direct + group traffic) -> LID->phone resolution. All passed.
+## Verification
+Performed 2026-11-05 with the owner's approval on his own number, on a
+functionally equivalent pre-release build (the repo code was restructured
+into src/ and helper modules afterwards): pair via terminal QR -> connect as
+own JID -> send to self -> receive live inbound (direct + group traffic) ->
+LID->phone resolution. All passed. The owner later unlinked the device; the
+session is revocable at any time (see Limitations).

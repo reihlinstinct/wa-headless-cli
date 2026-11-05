@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "description": "Headless WhatsApp Web CLI for Linux: terminal QR pairing, listen and send, no browser UI",
   "type": "commonjs",
-  "main": "cli.js",
-  "bin": { "wa-headless": "cli.js" },
+  "main": "src/cli.js",
+  "bin": {
+    "wa-headless": "src/cli.js"
+  },
   "scripts": {
-    "start": "node cli.js listen",
+    "start": "node src/cli.js listen",
     "test": "node --test"
   },
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc14",
     "qrcode": "^1.5.4",
