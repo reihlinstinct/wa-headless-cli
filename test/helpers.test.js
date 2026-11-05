@@ -47,3 +47,17 @@ test('resolver tolerates missing maps', () => {
   const r = makeNameResolver();
   assert.strictEqual(r('15550100001@s.whatsapp.net'), null);
 });
+
+// Chat-state mutation summaries (synthetic)
+const { chatUpdateSummary } = require('../lib-helpers');
+test('chatUpdateSummary: archive/pin/mute/read transitions', () => {
+  assert.strictEqual(chatUpdateSummary({ archived: true }), 'archived');
+  assert.strictEqual(chatUpdateSummary({ archived: false }), 'unarchived');
+  assert.strictEqual(chatUpdateSummary({ pinned: 5 }), 'pinned');
+  assert.strictEqual(chatUpdateSummary({ pinned: null, muteEndTime: 1893456000 }), 'muted');
+  assert.strictEqual(chatUpdateSummary({ muteEndTime: 0 }), 'unmuted');
+  assert.strictEqual(chatUpdateSummary({ unreadCount: 0 }), 'marked-read');
+  assert.strictEqual(chatUpdateSummary({ archived: true, pinned: 1 }), 'archived,pinned');
+  assert.strictEqual(chatUpdateSummary({ conversationTimestamp: 123 }), null);
+  assert.strictEqual(chatUpdateSummary(null), null);
+});

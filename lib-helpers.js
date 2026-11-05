@@ -31,4 +31,16 @@ function makeNameResolver(namesDb, lidToPhone) {
     return null;
   };
 }
-module.exports = { extractText, isGroupJid, isStatusBroadcast, phoneToJid, makeNameResolver };
+// Summarize a Baileys chats.update entry (from app-state mutations: archive,
+// pin, mute, mark-read) into a metadata-only string. Pure; no contents.
+function chatUpdateSummary(u) {
+  if (!u || typeof u !== 'object') return null;
+  const parts = [];
+  if (u.archived === true) parts.push('archived');
+  if (u.archived === false) parts.push('unarchived');
+  if (u.pinned != null) parts.push(u.pinned ? 'pinned' : 'unpinned');
+  if (u.muteEndTime != null) parts.push(Number(u.muteEndTime) > 0 ? 'muted' : 'unmuted');
+  if (u.unreadCount === 0) parts.push('marked-read');
+  return parts.length ? parts.join(',') : null;
+}
+module.exports = { chatUpdateSummary, extractText, isGroupJid, isStatusBroadcast, phoneToJid, makeNameResolver };
