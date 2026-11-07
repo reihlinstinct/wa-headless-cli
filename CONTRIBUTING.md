@@ -7,3 +7,7 @@
   contents. CI runs a best-effort privacy scan; `auth/`, `run/`, `*.log` and
   `buffer.json` are git-ignored.
 - Commits are signed; PRs get an independent review before merge.
+
+## File placement (enforced)
+
+Decide where a file lives BEFORE creating it. The contract in `.repo-layout.yml` lists the allowed top-level directories, the file types permitted in each, and the required community-standards files; `python tools/check_repo_layout.py` enforces it in CI. A new kind of file means updating the contract in the same PR.
